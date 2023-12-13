@@ -1,20 +1,74 @@
-import React, { Suspense, useRef, useState } from "react";
-import { GlobalCanvas, SmoothScrollbar } from "@14islands/r3f-scroll-rig";
-import { Environment, Loader } from "@react-three/drei";
-
+import React, { Suspense, useEffect, useRef, useState } from "react";
+import {
+  GlobalCanvas,
+  SmoothScrollbar,
+  UseCanvas,
+} from "@14islands/r3f-scroll-rig";
+import { Environment, Loader, RoundedBox } from "@react-three/drei";
 import { BodyCopy, Headline, Subtitle } from "./Text";
 import { Image } from "./Image";
 import { ImageCube } from "./ImageCube";
 import { WebGLBackground } from "./WebGLBackground";
 import { Lens } from "./Lens";
-
 import "@14islands/r3f-scroll-rig/css";
+import Logo from "./Logo";
+import { StickyScrollScene } from "@14islands/r3f-scroll-rig/powerups";
+import { useFrame } from "@react-three/fiber";
+import "./style.css";
+import { a, config, useSpring } from "@react-spring/three";
 
-// Photos by <a href="https://unsplash.com/@maxberg?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Maxim Berg</a> on <a href="https://unsplash.com/photos/u8maxDvbae8?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
+const AnimatedRoundedBox = a(RoundedBox);
+function StickySection() {
+  const el = useRef();
+  return (
+    <section>
+      <div className="StickyContainer">
+        <div ref={el} className="SomeDomContent"></div>
+      </div>
+      <UseCanvas>
+        <StickyScrollScene track={el}>
+          {(props) => (
+            <>
+              <SpinningBox {...props} />
+            </>
+          )}
+        </StickyScrollScene>
+      </UseCanvas>
+    </section>
+  );
+}
 
+function SpinningBox({ scale, scrollState, inViewport }) {
+  const box = useRef();
+  const size = scale.xy.min() * 0.5;
+
+  useFrame(() => {
+    box.current.rotation.y = scrollState.progress * Math.PI * 2;
+  });
+
+  const spring = useSpring({
+    scale: inViewport ? size : size * 0.0,
+    config: inViewport ? config.wobbly : config.stiff,
+    delay: inViewport ? 100 : 0,
+  });
+
+  return (
+    <AnimatedRoundedBox ref={box} {...spring}>
+      <meshNormalMaterial />
+    </AnimatedRoundedBox>
+  );
+}
 export default function App() {
   const eventSource = useRef();
   const [enabled, setEnabled] = useState(true);
+  const [isTouch, setTouch] = useState(false);
+  useEffect(() => {
+    const isTouch =
+      "ontouchstart" in window ||
+      navigator.maxTouchPoints > 0 ||
+      navigator.msMaxTouchPoints > 0;
+    setTouch(isTouch);
+  }, []);
 
   return (
     // We attach events onparent div in order to get events on both canvas and DOM
@@ -44,10 +98,7 @@ export default function App() {
           </Lens>
         )}
       </GlobalCanvas>
-      <SmoothScrollbar
-        enabled={enabled}
-        config={{ syncTouch: true }} // Lenis setting to force smooth scroll on touch devices
-      />
+
       <article>
         <header className="container">
           <div className="headerLayout">
@@ -62,12 +113,7 @@ export default function App() {
             </BodyCopy>
           </div>
         </header>
-        <section className="container">
-          <Image
-            src="images/maxim-berg-1_U2RcHnSjc-unsplash.jpg"
-            className="ImageLandscape"
-          />
-        </section>
+
         <section className="container">
           <h3>
             <Subtitle>We use CSS to create a responsive layout.</Subtitle>
@@ -77,13 +123,6 @@ export default function App() {
               </Subtitle>
             </em>
           </h3>
-          <p>
-            <BodyCopy>
-              Try turning off WebGL using the button in the sticky header.
-              You’ll notice smooth scrolling is disabled, and all scroll-bound
-              WebGL effects disappears.
-            </BodyCopy>
-          </p>
         </section>
 
         <section>
@@ -92,25 +131,31 @@ export default function App() {
             className="JellyPlaceholder"
           />
         </section>
-        <section className="container">
-          <h3>
-            <Subtitle>Most websites use a mix of WebGL and HTML.</Subtitle>
-            <em>
-              <Subtitle>
-                However, the Lens refraction requires all images and text to be
-                WebGL.
-              </Subtitle>
-            </em>
-          </h3>
-          <p>
-            <a href="https://github.com/14islands/r3f-scroll-rig">
-              <BodyCopy>
-                You can find the r3f-scroll-rig library on Github. Please use
-                WebGL responsibly™.
-              </BodyCopy>
-            </a>
-          </p>
-        </section>
+        <SmoothScrollbar
+          enabled={true}
+          config={{ syncTouch: true }} // Lenis setting to force smooth scroll on touch devices
+        >
+          {(bind) => (
+            <article {...bind}>
+              {isTouch && (
+                <section>
+                  <p style={{ color: "orange" }}>
+                    You are on a touch device which means the WebGL won't sync
+                    with the native scroll. Consider disabling ScrollScenes for
+                    touch devices, or experiment with the `smoothTouch` setting
+                    on Lenis.
+                  </p>
+                </section>
+              )}
+              <StickySection />
+              <Logo />
+              <Logo />
+              <Logo />
+              <Logo />
+              <Logo />
+            </article>
+          )}
+        </SmoothScrollbar>
       </article>
 
       <Loader
