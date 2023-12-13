@@ -7,8 +7,6 @@ import { Image } from "./Image";
 import { ImageCube } from "./ImageCube";
 import { WebGLBackground } from "./WebGLBackground";
 import { Lens } from "./Lens";
-import CodropsFrame from "./CodropsFrame";
-import EffectsToggle from "./EffectsToggle";
 
 import "@14islands/r3f-scroll-rig/css";
 
@@ -21,7 +19,6 @@ export default function App() {
   return (
     // We attach events onparent div in order to get events on both canvas and DOM
     <div ref={eventSource}>
-      <CodropsFrame />
       <GlobalCanvas
         // shader errors are hidden by default which speeds up compilation
         debug={false}
@@ -52,7 +49,6 @@ export default function App() {
         config={{ syncTouch: true }} // Lenis setting to force smooth scroll on touch devices
       />
       <article>
-        <EffectsToggle setEnabled={setEnabled} enabled={enabled} />
         <header className="container">
           <div className="headerLayout">
             <h2>
@@ -89,27 +85,7 @@ export default function App() {
             </BodyCopy>
           </p>
         </section>
-        <section className="ParallaxContainer">
-          <Image
-            src="images/maxim-berg-qsDfqZyTCAE-unsplash-crop.jpg"
-            className="aspect-9_13"
-            parallaxSpeed={1.08}
-          />
-          <Image
-            src="images/maxim-berg-ANuuRuCRRAc-unsplash.jpg"
-            className="aspect-16_11"
-            parallaxSpeed={0.92}
-          />
-        </section>
-        <section className="container">
-          <h4>
-            <BodyCopy>
-              Thanks to Threejs we can also render 3D geometry or models. The
-              following image is replaced by a box. Try scrolling hard to make
-              it wiggle.
-            </BodyCopy>
-          </h4>
-        </section>
+
         <section>
           <ImageCube
             src="images/maxim-berg-TcE45yIzJA0-unsplash.jpg"
@@ -135,9 +111,6 @@ export default function App() {
             </a>
           </p>
         </section>
-        <footer>
-          <CodropsFrame />
-        </footer>
       </article>
 
       <Loader
